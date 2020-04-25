@@ -9,9 +9,9 @@ public enum GenerationType
 
 public class FieldGenerator : MonoBehaviour
 {
-    [SerializeField] private int gridWidth = 10;
-    [SerializeField] private int gridHeight = 10;
-    [SerializeField] private float distanceBtwnCrystals = 1f;
+    [SerializeField] private int rows = 8;
+    [SerializeField] private int columns = 8;
+    [SerializeField] private float distanceBtwnCrystals = 65f;
     [SerializeField] private Transform gridCenter;
     [SerializeField] private Transform crystalsParent;
 
@@ -19,15 +19,25 @@ public class FieldGenerator : MonoBehaviour
     [SerializeField] private Field field;
     [SerializeField] private GameObject[] crystalPrefabs;
 
-    private void Start()
+    private Crystal[,] initialGrid = null;
+
+    #region DebugOptions
+    private int GenerationAttemptCount = 1;
+    #endregion
+
+    [ContextMenu("Generate")]
+    public void Generate()
     {
+        GenerationAttemptCount = 1;
+        System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        sw.Start();
         InitializeField();
+        sw.Stop();
+        Debug.Log($"Generation time == {sw.ElapsedMilliseconds} ms");
     }
 
     private void InitializeField()
     {
-        Crystal[,] initialGrid = null;
-
         switch (generationType)
         {
             case GenerationType.SimpleGrid:
@@ -42,26 +52,37 @@ public class FieldGenerator : MonoBehaviour
 
     private Crystal[,] RandomSimpleGrid()
     {
-        Crystal[,] newRandomizedGrid = new Crystal[gridWidth, gridHeight];
-        
-        for (int i = 0; i < gridWidth; i++)
+        if(initialGrid == null)
         {
-            for (int j = 0; j < gridHeight; j++)
+            initialGrid = new Crystal[rows, columns];
+
+            for (int i = 0; i < rows; i++)
             {
-                newRandomizedGrid[i, j] = InstantiateRandomCrystal();
+                for (int j = 0; j < columns; j++)
+                {
+                    initialGrid[i, j] = InstantiateRandomCrystal();
+                    initialGrid[i, j].GetComponentInChildren<UnityEngine.UI.Text>().text = $"({i},{j})";
+                }
             }
         }
-
-        newRandomizedGrid = GetPlacedCrystalsFrom(newRandomizedGrid);
-
-        if(field.HasMatchOn(newRandomizedGrid))
+        else
         {
+            RandomizeGrid();
+        }
+
+        PlaceCrystals();
+        SetUpCrystals();
+
+        if (field.MatchListOn(initialGrid).Count>0)
+        {
+            GenerationAttemptCount++;
+            Debug.Log($"Generation attempt count == {GenerationAttemptCount}");
             return RandomSimpleGrid();
         }
 
-        if(field.HasPossibleMovesOn(newRandomizedGrid))
+        if(field.HasPossibleMovesOn(initialGrid))
         {
-            return newRandomizedGrid;
+            return initialGrid;
         }
         else
         {
@@ -69,30 +90,57 @@ public class FieldGenerator : MonoBehaviour
         }
     }
 
-    private Crystal[,] GetPlacedCrystalsFrom(Crystal [,] grid)
-    {
-        Vector3 horizontalOffset = Vector3.right * distanceBtwnCrystals * gridWidth / 2;
-        Vector3 verticalOffset = Vector3.up * distanceBtwnCrystals * gridHeight / 2;
-        Vector3 topLeft = gridCenter.transform.position - horizontalOffset - verticalOffset;
-
-        for (int i = 0; i < gridWidth; i++)
-        {
-            for (int j = 0; j < gridHeight; j++)
-            {
-                grid[i, j] = InstantiateRandomCrystal();
-                horizontalOffset = Vector3.right * distanceBtwnCrystals * (i + 0.5f);
-                verticalOffset = Vector3.up * distanceBtwnCrystals * (j + 0.5f);
-                grid[i, j].transform.position = topLeft + horizontalOffset + verticalOffset;
-            }
-        }
-
-        return grid;
-    }
-
     private Crystal InstantiateRandomCrystal()
     {
         int rndPrefabIndex = Random.Range(0, crystalPrefabs.Length);
         Crystal rndCrystal = Instantiate(crystalPrefabs[rndPrefabIndex], crystalsParent).GetComponent<Crystal>();
         return rndCrystal;
+    }
+
+    private void RandomizeGrid()
+    {
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                Crystal temp = initialGrid[i, j];
+                int randomRow = Random.Range(0, rows);
+                int randomCol = Random.Range(0, columns);
+
+                initialGrid[i,j] = initialGrid[randomRow, randomCol];
+                initialGrid[randomRow, randomCol] = temp;
+                initialGrid[i, j].GetComponentInChildren<UnityEngine.UI.Text>().text = $"({i},{j})";
+                initialGrid[randomRow, randomCol].GetComponentInChildren<UnityEngine.UI.Text>().text = $"({randomRow},{randomCol})";
+            }
+        }
+    }
+
+    private void PlaceCrystals()
+    {
+        Vector3 horizontalOffset = Vector3.up * distanceBtwnCrystals * rows / 2;
+        Vector3 verticalOffset = Vector3.right * distanceBtwnCrystals * columns / 2;
+        Vector3 topLeft = gridCenter.transform.position - horizontalOffset - verticalOffset;
+
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                horizontalOffset = Vector3.up * distanceBtwnCrystals * (i + 0.5f);
+                verticalOffset = Vector3.right * distanceBtwnCrystals * (j + 0.5f);
+                initialGrid[i, j].transform.position = topLeft + horizontalOffset + verticalOffset;
+            }
+        }
+    }
+
+    private void SetUpCrystals()
+    {
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                initialGrid[i, j].x = i;
+                initialGrid[i, j].y = j;
+            }
+        }
     }
 }

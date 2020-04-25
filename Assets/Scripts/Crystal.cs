@@ -18,5 +18,20 @@ public class Crystal : MonoBehaviour
     public int y = 0;
     public CrystalType crystalType = 0;
 
-    private Field field;
+    [SerializeField] private UnityEngine.UI.Button thisButton = null;
+
+    private void Start()
+    {
+        thisButton.onClick.AddListener(() => InvokeSelection());
+    }
+
+    private void InvokeSelection()
+    {
+        Field.OnCrystalSelected(this);
+    }
+
+    public void MoveTo(Vector3 position)
+    {
+
+    }
 }
