@@ -61,7 +61,7 @@ public class FieldGenerator : MonoBehaviour
                 for (int j = 0; j < columns; j++)
                 {
                     initialGrid[i, j] = InstantiateRandomCrystal();
-                    initialGrid[i, j].GetComponentInChildren<UnityEngine.UI.Text>().text = $"({i},{j})";
+                    initialGrid[i, j].SetDebugText();
                 }
             }
         }
@@ -109,8 +109,6 @@ public class FieldGenerator : MonoBehaviour
 
                 initialGrid[i,j] = initialGrid[randomRow, randomCol];
                 initialGrid[randomRow, randomCol] = temp;
-                initialGrid[i, j].GetComponentInChildren<UnityEngine.UI.Text>().text = $"({i},{j})";
-                initialGrid[randomRow, randomCol].GetComponentInChildren<UnityEngine.UI.Text>().text = $"({randomRow},{randomCol})";
             }
         }
     }
@@ -140,6 +138,7 @@ public class FieldGenerator : MonoBehaviour
             {
                 initialGrid[i, j].x = i;
                 initialGrid[i, j].y = j;
+                initialGrid[i, j].SetDebugText();
             }
         }
     }

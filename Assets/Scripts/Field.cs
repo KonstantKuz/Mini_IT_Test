@@ -22,16 +22,21 @@ public class Field : MonoBehaviour
     private List<Crystal> removed = null;
 
     public static Action<Crystal> OnCrystalSelected;
-    public static Action<(Crystal from, Crystal to)> OnCrystalDragged;
+    public static Action<(Crystal dragged, Vector2 direction)> OnCrystalDragged;
+    public static Action OnMovingDone;
 
     public void Initialize(Crystal[,] crystalGrid)
     {
+
         this.crystalGrid = crystalGrid;
 
-        OnCrystalSelected += FillSelections;
+        removed = new List<Crystal>();
+
+        OnCrystalSelected += FillClickSelections;
+        OnMovingDone += RemoveMatches;
     }
 
-    private void FillSelections(Crystal selectedCrystal)
+    private void FillClickSelections(Crystal selectedCrystal)
     {
         if(!firstSelected)
         {
@@ -40,41 +45,31 @@ public class Field : MonoBehaviour
         else if(!secondSelected)
         {
             secondSelected = selectedCrystal;
-            ChangeCrystals();
+            SwipeCrystals();
             firstSelected = null;
             secondSelected = null;
         }
     }
 
-    private void ChangeCrystals()
+    private void SwipeCrystals()
     {
         Vector3 firstPos = firstSelected.transform.position;
         Vector3 secondPos = secondSelected.transform.position;
-
-        crystalGrid[firstSelected.x, firstSelected.y].transform.position = secondPos;
-        crystalGrid[secondSelected.x, secondSelected.y].transform.position = firstPos;
+        crystalGrid[firstSelected.x, firstSelected.y].MoveTo(secondPos, true);
+        crystalGrid[secondSelected.x, secondSelected.y].MoveTo(firstPos,false);
 
         crystalGrid[firstSelected.x, firstSelected.y] = secondSelected;
         crystalGrid[secondSelected.x, secondSelected.y] = firstSelected;
 
         int firstX = firstSelected.x;
         int firstY = firstSelected.y;
-        int secondX = secondSelected.x;
-        int secondY = secondSelected.y;
-
-        firstSelected.x = secondX;
-        firstSelected.y = secondY;
-        secondSelected.x = firstX;
-        secondSelected.y = firstY;
-
-        RemoveMatches();
-
-        //crystalGrid[i, j].GetComponentInChildren<UnityEngine.UI.Text>().text = $"({i},{j})";
-        //crystalGrid[randomRow, randomCol].GetComponentInChildren<UnityEngine.UI.Text>().text = $"({randomRow},{randomCol})";
+        firstSelected.x = secondSelected.x;
+        firstSelected.y = secondSelected.y;
+        secondSelected.x = firstSelected.x;
+        secondSelected.y = firstSelected.y;
     }
 
-    [ContextMenu("RemoveMatches")]
-    public void RemoveMatches()
+    private void RemoveMatches()
     {
         List<Match> matches = MatchListOn(crystalGrid);
 
@@ -82,7 +77,40 @@ public class Field : MonoBehaviour
         {
             for (int j = 0; j < matches[i].line.Count; j++)
             {
-                matches[i].line[j].gameObject.SetActive(false);
+                int rowIndexRemoveFrom = matches[i].line[j].x;
+                int columnIndexRemoveFrom = matches[i].line[j].y;
+                RemoveCrystal(rowIndexRemoveFrom, columnIndexRemoveFrom);
+            }
+        }
+    }
+
+    private void RemoveCrystal(int rowIndex, int columnIndex)
+    {
+        Crystal removedCrystal = crystalGrid[rowIndex, columnIndex];
+        removedCrystal.gameObject.SetActive(false);
+        removed.Add(removedCrystal);
+        AffectCrystalsOver(removedCrystal);
+    }
+
+    public void AffectCrystalsOver(Crystal removedCrystal)
+    {
+        int rows = crystalGrid.GetLength(0);
+        
+        for (int i = removedCrystal.x + 1; i < rows; i++)
+        {
+            if (crystalGrid[i, removedCrystal.y] != null)
+            {
+                int nextCrystalIndex = i;
+                nextCrystalIndex--;
+                crystalGrid[i, removedCrystal.y].MoveTo(crystalGrid[nextCrystalIndex, removedCrystal.y].transform.position, false);
+                crystalGrid[i, removedCrystal.y].x = nextCrystalIndex;
+                crystalGrid[nextCrystalIndex, removedCrystal.y] = crystalGrid[i, removedCrystal.y];
+
+                crystalGrid[i, removedCrystal.y].SetDebugText();
+                crystalGrid[nextCrystalIndex, removedCrystal.y].SetDebugText();
+
+                //grid[piece.col][row + 1] = grid[piece.col][row];
+                //grid[piece.col][row] = null;
             }
         }
     }
@@ -132,6 +160,7 @@ public class Field : MonoBehaviour
         Match match = new Match();
 
         int columns = grid.GetLength(1);
+        
         match.line.Add(grid[rowIndex, columnIndex]);
         for (int i = 1; columnIndex + i < columns; i++)
         {
