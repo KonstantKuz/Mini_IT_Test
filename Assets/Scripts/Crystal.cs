@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.UI;
@@ -13,16 +14,36 @@ public enum CrystalType
     Yellow = 5,
 }
 
+[System.Serializable]
+public class CrystalData
+{
+    [SerializeField] private CrystalType crystalType = 0;
+    [SerializeField] private float moveTime = 0.75f;
+    [SerializeField] private Color color;
+
+    public CrystalType CrystalType { get { return crystalType; } }
+    public float MoveTime { get { return moveTime; } }
+    public Color Color { get { return color; } }
+}
+
 public class Crystal : MonoBehaviour
 {
-    public int x = 0;
-    public int y = 0;
-    public CrystalType crystalType = 0;
-
+    [Header("Components to cache")]
     [SerializeField] private Button thisButton = null;
+    [SerializeField] private Image image = null;
+    [SerializeField] private Text indexesDebugText = null;
 
-    private void Start()
+    [HideInInspector] public int rowIndex = 0;
+    [HideInInspector] public int columnIndex = 0;
+
+    public CrystalData data;
+    
+    public float MoveTime { get { return data.MoveTime; } }
+
+    public void Initialize()
     {
+        image.color = data.Color;
+
         thisButton.onClick.AddListener(() => InvokeSelection());
     }
 
@@ -31,24 +52,17 @@ public class Crystal : MonoBehaviour
         Field.OnCrystalSelected(this);
     }
 
-    public void MoveTo(Vector3 position, bool invoke)
+    public void MoveTo(Vector3 position)
     {
-        transform.DOMove(position, 0.75f);
-        if(invoke)
-        {
-            StartCoroutine(OnMovingDoneInvoke());
-        }
-    }
-
-    private IEnumerator OnMovingDoneInvoke()
-    {
-        yield return new WaitForSeconds(1f);
-        Field.OnMovingDone();
         SetDebugText();
+        transform.DOMove(position, data.MoveTime);
     }
 
     public void SetDebugText()
     {
-        GetComponentInChildren<Text>().text = $"({x},{y})";
+        if(indexesDebugText)
+        {
+            indexesDebugText.text = $"({rowIndex},{columnIndex})";
+        }
     }
 }

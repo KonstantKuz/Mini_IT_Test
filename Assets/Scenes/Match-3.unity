@@ -275,14 +275,13 @@ MonoBehaviour:
   distanceBtwnCrystals: 65
   gridCenter: {fileID: 1444823698}
   crystalsParent: {fileID: 1444823698}
-  generationType: 0
-  field: {fileID: 1444823700}
   crystalPrefabs:
-  - {fileID: 507347804590534474, guid: 52de7d6293858cf4c95b3b27b8b04a1a, type: 3}
-  - {fileID: 1349082453563724215, guid: f635b87429215b34d942df24154f6bb1, type: 3}
-  - {fileID: 3608166657482456414, guid: 77cee8d7c30cc7b47a6cd608e8edf03d, type: 3}
-  - {fileID: 3225727157092017259, guid: aa3a555b9cf2866418f17f83c0c30825, type: 3}
-  - {fileID: 8249381348000114683, guid: 3696141769e78cb4daee97560acd6420, type: 3}
+  - {fileID: 7553847954584904510, guid: 36d7f07c68805bd4396e3bd46e308ed8, type: 3}
+  - {fileID: 2498435972310015972, guid: 42666152729fba74eab5cbbeb960f188, type: 3}
+  - {fileID: 6992590960664460050, guid: 7055398f4dfeea04ca029475ebe45a95, type: 3}
+  - {fileID: 8342529194481260270, guid: 7cc02ca9b24696d4596fadae20e54b99, type: 3}
+  - {fileID: 4014392429704885561, guid: 295fa03069baf8346905b3e24018f72f, type: 3}
+  - {fileID: 3415526505129625055, guid: 8ccd8884ac65f2441862b46eeeded38c, type: 3}
 --- !u!114 &1444823700
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -295,6 +294,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1824b6f24cd77c4fbf9d3c674998e08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  generator: {fileID: 1444823699}
+  minCrystalsCountInMatch: 2
 --- !u!114 &1444823701
 MonoBehaviour:
   m_ObjectHideFlags: 0
