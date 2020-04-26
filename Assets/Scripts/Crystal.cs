@@ -14,6 +14,14 @@ public enum CrystalType
     Yellow = 5,
 }
 
+public interface IGridPoint
+{
+    int rowIndex { get; set; }
+    int columnIndex { get; set; }
+    void SetDebugText();
+    void Initialize();
+}
+
 [System.Serializable]
 public class CrystalData
 {
@@ -26,16 +34,16 @@ public class CrystalData
     public Color Color { get { return color; } }
 }
 
-public class Crystal : MonoBehaviour
+public class Crystal : MonoBehaviour, IGridPoint
 {
     [Header("Components to cache")]
     [SerializeField] private Button thisButton = null;
     [SerializeField] private Image image = null;
     [SerializeField] private Text indexesDebugText = null;
 
-    [HideInInspector] public int rowIndex = 0;
-    [HideInInspector] public int columnIndex = 0;
-
+    public int rowIndex { get; set; }
+    public int columnIndex { get; set; }
+    public Transform Transform { get { return transform; } }
     public CrystalData data;
     
     public float MoveTime { get { return data.MoveTime; } }
@@ -49,13 +57,13 @@ public class Crystal : MonoBehaviour
 
     private void InvokeSelection()
     {
-        Field.OnCrystalSelected(this);
+        Match3Field.OnCrystalSelected(this as Crystal);
     }
 
     public void MoveTo(Vector3 position)
     {
         SetDebugText();
-        transform.DOMove(position, data.MoveTime);
+        Transform.DOMove(position, data.MoveTime);
     }
 
     public void SetDebugText()

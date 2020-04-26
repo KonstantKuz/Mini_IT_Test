@@ -2,5 +2,5 @@
 
 public abstract class GridGenerator : MonoBehaviour 
 {
-    public abstract Crystal[][] GenerateGrid(Field field);
+    //public abstract T[][] GenerateGrid();
 }

@@ -2,94 +2,57 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SimpleGridGenerator : GridGenerator
+public class SimpleGridGenerator : MonoBehaviour
 {
     [SerializeField] private int rows = 8;
     [SerializeField] private int columns = 8;
     [SerializeField] private float distanceBtwnCrystals = 65f;
-    [SerializeField] private Transform gridCenter;
-    [SerializeField] private Transform crystalsParent;
+    [SerializeField] private Transform gridCenter = null;
+    [SerializeField] private Transform gridParent = null;
 
-    [SerializeField] private GameObject[] crystalPrefabs;
+    [SerializeField] private GameObject[] gridPointPrefabs = null;
 
-    private Crystal[][] generatedGrid = null;
 
-    #region DebugOptions
-    private int GenerationAttemptCount = 1;
-    #endregion
-
-    #region GridGenerator
-
-    public override Crystal[][] GenerateGrid(Field field)
+    public T[][] RandomSimpleGrid<T>() where T : MonoBehaviour, IGridPoint
     {
-        GenerationAttemptCount = 1;
+        T[][] generatedGrid;
 
-        generatedGrid = RandomSimpleGrid(field);
-
-        return generatedGrid;
-    }
-    #endregion
-
-    private Crystal[][] RandomSimpleGrid(Field field)
-    {
-        if(generatedGrid == null)
+        generatedGrid = new T[rows][];
+        for (int i = 0; i < generatedGrid.Length; i++)
         {
-            generatedGrid = new Crystal[rows][];
-            for (int i = 0; i < generatedGrid.Length; i++)
+            generatedGrid[i] = new T[columns];
+        }
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
             {
-                generatedGrid[i] = new Crystal[columns];
-            }
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < columns; j++)
-                {
-                    generatedGrid[i][j] = InstantiateRandomCrystal();
-                    generatedGrid[i][j].Initialize();
-                    generatedGrid[i][j].SetDebugText();
-                }
+                generatedGrid[i][j] = InstantiateRandomPoint<T>();
+                generatedGrid[i][j].Initialize();
+                generatedGrid[i][j].SetDebugText();
             }
         }
-        else
-        {
-            RandomizeCrystals();
-        }
+        generatedGrid = PlacePoints(generatedGrid);
+        generatedGrid = SetUpPointsIndexes(generatedGrid);
 
-        PlaceCrystals();
-        SetUpCrystals();
-
-        if (field.MatchListOn(generatedGrid).Count>0)
-        {
-            GenerationAttemptCount++;
-            Debug.Log($"Generated grid that already exists matches. Regenerate. Generation attempt == {GenerationAttemptCount}");
-            return RandomSimpleGrid(field);
-        }
-
-        if(field.HasPossibleMovesOn(generatedGrid))
-        {
-            return generatedGrid;
-        }
-        else
-        {
-            return RandomSimpleGrid(field);
-        }
+        return generatedGrid as T[][];
     }
 
-    private Crystal InstantiateRandomCrystal()
+    private T InstantiateRandomPoint<T>() where T : MonoBehaviour, IGridPoint
     {
-        int rndCrystalPrefabIndex = Random.Range(0, crystalPrefabs.Length);
+        int rndPointPrefab = Random.Range(0, gridPointPrefabs.Length);
 
-        Crystal newCrystal = Instantiate(crystalPrefabs[rndCrystalPrefabIndex], crystalsParent).GetComponent<Crystal>();
+        T newRndPoint = Instantiate(gridPointPrefabs[rndPointPrefab], gridParent).GetComponent<T>();
 
-        return newCrystal;
+        return newRndPoint;
     }
 
-    private void RandomizeCrystals()
+    public T[][] RandomizePoints<T>(T[][] generatedGrid) where T : IGridPoint
     {
         for (int i = 0; i < rows; i++)
         {
             for (int j = 0; j < columns; j++)
             {
-                Crystal temp = generatedGrid[i][j];
+                T temp = generatedGrid[i][j];
                 int randomRow = Random.Range(0, rows);
                 int randomCol = Random.Range(0, columns);
 
@@ -97,9 +60,11 @@ public class SimpleGridGenerator : GridGenerator
                 generatedGrid[randomRow][randomCol] = temp;
             }
         }
+
+        return generatedGrid;
     }
 
-    private void PlaceCrystals()
+    public T[][] PlacePoints<T>(T[][] generatedGrid) where T : MonoBehaviour, IGridPoint
     {
         Vector3 horizontalOffset = Vector3.up * distanceBtwnCrystals * rows / 2;
         Vector3 verticalOffset = Vector3.right * distanceBtwnCrystals * columns / 2;
@@ -114,9 +79,11 @@ public class SimpleGridGenerator : GridGenerator
                 generatedGrid[i][j].transform.position = topLeft + horizontalOffset + verticalOffset;
             }
         }
+
+        return generatedGrid;
     }
 
-    private void SetUpCrystals()
+    public T[][] SetUpPointsIndexes<T>(T[][] generatedGrid) where T : IGridPoint
     {
         for (int i = 0; i < rows; i++)
         {
@@ -127,5 +94,7 @@ public class SimpleGridGenerator : GridGenerator
                 generatedGrid[i][j].SetDebugText();
             }
         }
+
+        return generatedGrid;
     }
 }

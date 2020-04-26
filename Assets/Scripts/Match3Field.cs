@@ -13,9 +13,9 @@ public class Match
     }
 }
 
-public class Field : MonoBehaviour
+public class Match3Field : MonoBehaviour
 {
-    [SerializeField] private GridGenerator generator = null;
+    [SerializeField] private SimpleGridGenerator generator = null;
     [SerializeField] private int minCrystalsCountInMatch = 2;
     private Crystal[][] crystalGrid = null;
     private Vector3[][] positionsGrid = null;
@@ -28,14 +28,51 @@ public class Field : MonoBehaviour
     public static Action<Crystal> OnCrystalSelected;
     public static Action<(Crystal dragged, Vector2 direction)> OnCrystalDragged;
 
+    #region DebugOptions
+    private int GenerationAttemptCount = 1;
+    #endregion
+
     private void Start()
     {
+    //    Initialize();
+    }
+
+    [ContextMenu("gener")]
+    public void Gener()
+    {
+        GenerationAttemptCount = 1;
+
         Initialize();
     }
 
     public void Initialize()
     {
-        crystalGrid = generator.GenerateGrid(this);
+
+        if(crystalGrid == null)
+        {
+            crystalGrid = generator.RandomSimpleGrid<Crystal>();
+            SetUpPositionsGrid();
+        }
+        else
+        {
+            crystalGrid = generator.RandomizePoints(crystalGrid);
+            crystalGrid = generator.PlacePoints(crystalGrid);
+            crystalGrid = generator.SetUpPointsIndexes(crystalGrid);
+        }
+
+        if (HasMatches())
+        {
+            GenerationAttemptCount++;
+            Debug.Log($"Generated grid that already exists matches. Regenerate. Generation attempt == {GenerationAttemptCount}");
+            Initialize();
+            return;
+        }
+
+        if (!HasPossibleMovesOn(crystalGrid))
+        {
+            Initialize();
+            return;
+        }
 
         SetUpPositionsGrid();
 
@@ -52,7 +89,7 @@ public class Field : MonoBehaviour
             positionsGrid[i] = new Vector3[crystalGrid[i].Length];
             for (int j = 0; j < positionsGrid[i].Length; j++)
             {
-                positionsGrid[i][j] = crystalGrid[i][j].transform.position;
+                positionsGrid[i][j] = crystalGrid[i][j].Transform.position;
             }
         }
     }
@@ -148,39 +185,34 @@ public class Field : MonoBehaviour
 
     private void RemoveCrystal(Crystal removedCrystal)
     {
-        removedCrystal.gameObject.SetActive(false);
-        removed.Add(removedCrystal);
-        crystalGrid[removedCrystal.rowIndex][removedCrystal.columnIndex] = null;
-        AffectToAllCrystalsOver(removedCrystal);
+        if(removedCrystal)
+        {
+            removedCrystal.gameObject.SetActive(false);
+            removed.Add(removedCrystal);
+            crystalGrid[removedCrystal.rowIndex][removedCrystal.columnIndex] = null;
+            AffectToAllCrystalsOver(removedCrystal);
+        }
     }
 
-    public void AffectToAllCrystalsOver(Crystal removedCrystal)
+    public void AffectToAllCrystalsOver(IGridPoint removedCrystal)
     {
         int rows = crystalGrid.Length;
 
         for (int upperCrystalIndex = removedCrystal.rowIndex + 1; upperCrystalIndex < rows; upperCrystalIndex++)
         {
-            System.Text.StringBuilder str = new System.Text.StringBuilder();
-            str.AppendLine("Move crystal from to :");
-            str.AppendLine($"From : ({crystalGrid[upperCrystalIndex][removedCrystal.columnIndex].rowIndex},{crystalGrid[upperCrystalIndex][removedCrystal.columnIndex].columnIndex})");
+            if(!crystalGrid[upperCrystalIndex][removedCrystal.columnIndex])
+            {
+                continue;
+            }
             if(crystalGrid[upperCrystalIndex][removedCrystal.columnIndex].rowIndex==upperCrystalIndex)
             {
                 crystalGrid[upperCrystalIndex][removedCrystal.columnIndex].rowIndex = upperCrystalIndex - 1;
                 crystalGrid[upperCrystalIndex - 1][removedCrystal.columnIndex] = crystalGrid[upperCrystalIndex][removedCrystal.columnIndex];
                 crystalGrid[upperCrystalIndex][removedCrystal.columnIndex].MoveTo(positionsGrid[upperCrystalIndex - 1][removedCrystal.columnIndex]);
             }
-            else
-            {
-                crystalGrid[upperCrystalIndex - 1][removedCrystal.columnIndex] = new Crystal();
-            }
-
-            str.AppendLine($"To : ({crystalGrid[upperCrystalIndex][removedCrystal.columnIndex].rowIndex},{crystalGrid[upperCrystalIndex][removedCrystal.columnIndex].columnIndex})");
-            Debug.Log(str.ToString());
 
             crystalGrid[upperCrystalIndex][removedCrystal.columnIndex].SetDebugText();
         }
-
-        //RemoveMatchesAfterDelay(1f);
     }
     
     public List<Match> MatchListOn(Crystal[][] grid)
@@ -204,24 +236,67 @@ public class Field : MonoBehaviour
             }
         }
 
-        for (int rowIndex = 0; rowIndex < rows; rowIndex++)
-        {
-            int columns = grid[rowIndex].Length;
+        //for (int rowIndex = 0; rowIndex < rows; rowIndex++)
+        //{
+        //    int columns = grid[rowIndex].Length;
 
-            for (int colIndex = 0; colIndex < columns; colIndex++)
-            {
-                Match verticalMatch = GetVerticalMatch(rowIndex, colIndex, grid);
-                if (verticalMatch.line.Count > minCrystalsCountInMatch)
-                {
-                    matchList.Add(verticalMatch);
-                    colIndex += verticalMatch.line.Count;
-                }
-            }
-        }
+        //    for (int colIndex = 0; colIndex < columns; colIndex++)
+        //    {
+        //        Match verticalMatch = GetVerticalMatch(rowIndex, colIndex, grid);
+        //        if (verticalMatch.line.Count > minCrystalsCountInMatch)
+        //        {
+        //            matchList.Add(verticalMatch);
+        //            colIndex += verticalMatch.line.Count;
+        //        }
+        //    }
+        //}
 
         Debug.Log($"MatchList count == {matchList.Count}");
 
         return matchList;
+    }
+
+    public bool HasMatches()
+    {
+        List<Match> matchList = new List<Match>();
+
+        int rows = crystalGrid.Length;
+
+        for (int rowIndex = 0; rowIndex < rows; rowIndex++)
+        {
+            int columns = crystalGrid[rowIndex].Length;
+
+            for (int colIndex = 0; colIndex < columns; colIndex++)
+            {
+                Match horizontalMatch = GetHorizontalMatchOn(rowIndex, colIndex, crystalGrid);
+                if (horizontalMatch.line.Count > minCrystalsCountInMatch)
+                {
+                    matchList.Add(horizontalMatch);
+                    colIndex += horizontalMatch.line.Count;
+
+                    return true;
+                }
+            }
+        }
+
+        //for (int rowIndex = 0; rowIndex < rows; rowIndex++)
+        //{
+        //    int columns = crystalGrid[rowIndex].Length;
+
+        //    for (int colIndex = 0; colIndex < columns; colIndex++)
+        //    {
+        //        Match verticalMatch = GetVerticalMatch(rowIndex, colIndex, crystalGrid);
+        //        if (verticalMatch.line.Count > minCrystalsCountInMatch)
+        //        {
+        //            matchList.Add(verticalMatch);
+        //            colIndex += verticalMatch.line.Count;
+
+        //            return true;
+        //        }
+        //    }
+        //}
+
+        return false;
     }
 
     private Match GetHorizontalMatchOn(int rowIndex, int columnIndex, Crystal[][] grid)
@@ -238,9 +313,13 @@ public class Field : MonoBehaviour
             {
                 return match;
             }
-            if (grid[rowIndex][columnIndex].data.CrystalType == grid[rowIndex][columnIndex + i].data.CrystalType)
+
+            Crystal current = grid[rowIndex][columnIndex];
+            Crystal next = grid[rowIndex][columnIndex + i];
+
+            if (current.data.CrystalType == next.data.CrystalType)
             {
-                match.line.Add(grid[rowIndex][columnIndex + i]);
+                match.line.Add(next);
             }
             else
             {
@@ -264,9 +343,12 @@ public class Field : MonoBehaviour
             {
                 return match;
             }
-            if (grid[rowIndex][columnIndex].data.CrystalType == grid[rowIndex + i][columnIndex].data.CrystalType)
+            Crystal current = grid[rowIndex][columnIndex];
+            Crystal next = grid[rowIndex + i][columnIndex];
+
+            if (current.data.CrystalType == next.data.CrystalType)
             {
-                match.line.Add(grid[rowIndex + i][columnIndex]);
+                match.line.Add(next);
             }
             else
             {
