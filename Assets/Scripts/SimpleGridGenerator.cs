@@ -86,7 +86,6 @@ public class SimpleGridGenerator : MonoBehaviour
 
         T newRndPoint = Instantiate(gridPointPrefabs[rndPointPrefab], gridParent).GetComponent<T>();
         newRndPoint.Initialize();
-        //newRndPoint.SetDebugText();
 
         return newRndPoint;
     }
@@ -141,5 +140,23 @@ public class SimpleGridGenerator : MonoBehaviour
         }
 
         return generatedGrid;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Vector3 horizontalOffset = Vector3.up * distanceBtwnPoints * rows / 2;
+        Vector3 verticalOffset = Vector3.right * distanceBtwnPoints * columns / 2;
+        Vector3 topLeft = gridCenter.transform.position - horizontalOffset - verticalOffset;
+
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                horizontalOffset = Vector3.up * distanceBtwnPoints * (i + 0.5f);
+                verticalOffset = Vector3.right * distanceBtwnPoints * (j + 0.5f);
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireSphere(topLeft + horizontalOffset + verticalOffset, 5f);
+            }
+        }
     }
 }

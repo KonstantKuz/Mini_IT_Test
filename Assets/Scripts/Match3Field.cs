@@ -26,11 +26,20 @@ public class Match3Field : MonoBehaviour
     private List<Crystal> removed = null;
 
     public static Action<Crystal> OnCrystalSelected;
-    public static Action<(Crystal dragged, Vector2 direction)> OnCrystalDragged;
 
     #region DebugOptions
     private int GenerationAttemptCount = 1;
     #endregion
+
+    private void OnEnable()
+    {
+        OnCrystalSelected += FillSelections;
+    }
+
+    private void OnDisable()
+    {
+        OnCrystalSelected -= FillSelections;
+    }
 
     private void Start()
     {
@@ -78,8 +87,6 @@ public class Match3Field : MonoBehaviour
         SetUpPositionsGrid();
 
         removed = new List<Crystal>();
-
-        OnCrystalSelected += FillClickSelections;
     }
 
     private void SetUpPositionsGrid()
@@ -87,7 +94,7 @@ public class Match3Field : MonoBehaviour
         positionsGrid = generator.GetPositionsGrid();
     }
 
-    private void FillClickSelections(Crystal selectedCrystal)
+    private void FillSelections(Crystal selectedCrystal)
     {
         if(!firstSelected)
         {

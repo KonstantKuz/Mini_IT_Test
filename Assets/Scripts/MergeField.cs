@@ -16,8 +16,19 @@ public class MergeField : MonoBehaviour
     private Ship secondSelected = null;
 
     public static Action<Ship> OnShipSelected;
-    
+    public static Action OnShipsMerged;
+
     private Dictionary<ShipType, GameObject> shipPrefabsDict = null;
+
+    private void OnEnable()
+    {
+        OnShipSelected += FillSelections;
+    }
+
+    private void OnDisable()
+    {
+        OnShipSelected -= FillSelections;
+    }
 
     private void Start()
     {
@@ -30,8 +41,6 @@ public class MergeField : MonoBehaviour
         SetUpPrefabsDictionary();
         GetPositionsGrid();
         GetEmptyShipGrid();
-
-        OnShipSelected += FillSelections;
     }
 
     private void SetUpPrefabsDictionary()
@@ -114,6 +123,8 @@ public class MergeField : MonoBehaviour
         Destroy(secondSelected.gameObject);
 
         ResetSelections();
+
+        OnShipsMerged();
     }
 
     private void AffectMergeResult(Ship mergedShip)
