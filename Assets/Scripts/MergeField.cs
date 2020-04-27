@@ -17,7 +17,7 @@ public class MergeField : MonoBehaviour
     private Ship secondSelected = null;
 
     public static Action<Ship> OnShipSelected;
-    public static Action<(Ship selected, Vector2 direction)> OnShipDragged;
+    public static Action<(Ship selected, Vector2 dragDirection)> OnShipDragged;
 
     public static Action OnShipsMerged;
 
@@ -94,39 +94,32 @@ public class MergeField : MonoBehaviour
         }
     }
 
-    private void TryFillSelectionsAndTryMerge((Ship selected, Vector2 direction) data)
+    private void TryFillSelectionsAndTryMerge((Ship selected, Vector2 dragDirection) data)
     {
         firstSelected = data.selected;
 
-        int rowIndexToMerge = firstSelected.rowIndex + Mathf.Clamp((int)data.direction.y, -1, 1);
-        int colIndexToMerge = firstSelected.colIndex + Mathf.Clamp((int)data.direction.x, -1, 1);
-        Debug.Log($"Seleted = ({firstSelected.rowIndex},{firstSelected.colIndex}). ToMerge = ({rowIndexToMerge},{colIndexToMerge})");
-        TryGetSecondSelected(rowIndexToMerge, colIndexToMerge);
+        int secondSelectedRowIndex = firstSelected.rowIndex + Mathf.Clamp((int)data.dragDirection.y, -1, 1);
+        int secondSelectedColIndex = firstSelected.colIndex + Mathf.Clamp((int)data.dragDirection.x, -1, 1);
+        //Debug.Log($"Seleted = ({firstSelected.rowIndex},{firstSelected.colIndex}). ToMerge = ({rowIndexToMerge},{colIndexToMerge})");
+        TryGetSecondSelected(secondSelectedRowIndex, secondSelectedColIndex);
 
-        if(secondSelected)
+        if (!ReferenceEquals(secondSelected, null))
         {
             TryMergeShips();
-            //Debug.Log($"Seleted = ({firstSelected.rowIndex},{firstSelected.colIndex}). ToMerge = ({rowIndexToMerge},{colIndexToMerge}). Direction == ({data.direction.x},{data.direction.y})");
         }
     }
 
     private void TryGetSecondSelected(int rowIndexToMerge, int colIndexToMerge)
     {
         int rows = shipGrid.Length;
-        rowIndexToMerge = Mathf.Clamp(rowIndexToMerge, 0, rows);
+        rowIndexToMerge = Mathf.Clamp(rowIndexToMerge, 0, rows-1);
 
-        if (rowIndexToMerge >= 0 && rowIndexToMerge < rows)
+        for (int rowIndex = 0; rowIndex < rows; rowIndex++)
         {
-            for (int rowIndex = 0; rowIndex < rows; rowIndex++)
-            {
-                int columns = shipGrid[rowIndex].Length;
-                colIndexToMerge = Mathf.Clamp(colIndexToMerge, 0, columns);
+            int columns = shipGrid[rowIndex].Length;
+            colIndexToMerge = Mathf.Clamp(colIndexToMerge, 0, columns-1);
 
-                if (colIndexToMerge >= 0 && colIndexToMerge < columns)
-                {
-                    secondSelected = shipGrid[rowIndexToMerge][colIndexToMerge];
-                }
-            }
+            secondSelected = shipGrid[rowIndexToMerge][colIndexToMerge];
         }
     }
 

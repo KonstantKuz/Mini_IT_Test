@@ -30,6 +30,7 @@ public class ShipData
 
 public class Ship : MonoBehaviour, IGridPoint, IPointerClickHandler, IDragHandler
 {
+    [SerializeField] private bool debugIndexes = true;
     [Header("Components to cache")]
     [SerializeField] private Button thisButton = null;
     [SerializeField] private Image image = null;
@@ -46,6 +47,10 @@ public class Ship : MonoBehaviour, IGridPoint, IPointerClickHandler, IDragHandle
     public void Initialize()
     {
         image.color = data.Color;
+        if(debugIndexes)
+        {
+            indexesDebugText.gameObject.SetActive(true);
+        }
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -63,11 +68,11 @@ public class Ship : MonoBehaviour, IGridPoint, IPointerClickHandler, IDragHandle
         MergeField.OnShipSelected?.Invoke(this);
     }
 
-    private void InvokeDragging(Vector2 direction)
+    private void InvokeDragging(Vector2 dragDirection)
     {
         if(canDrag)
         {
-            MergeField.OnShipDragged?.Invoke((this, direction));
+            MergeField.OnShipDragged?.Invoke((this, dragDirection));
             StartCoroutine(FreezeOn(0.5f));
         }
     }
