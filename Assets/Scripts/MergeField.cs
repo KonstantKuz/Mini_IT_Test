@@ -17,19 +17,23 @@ public class MergeField : MonoBehaviour
     private Ship secondSelected = null;
 
     public static Action<Ship> OnShipSelected;
+    public static Action<(Ship selected, Vector2 direction)> OnShipDragged;
+
     public static Action OnShipsMerged;
 
     private Dictionary<ShipType, GameObject> shipPrefabsDict = null;
 
     private void OnEnable()
     {
-        OnShipSelected += FillSelections;
+        OnShipSelected += FillSelectionsAndTryMerge;
+        OnShipDragged += TryFillSelectionsAndTryMerge;
         LevelProgress.OnProgressFinished += delegate { StopAllCoroutines(); };
     }
 
     private void OnDisable()
     {
-        OnShipSelected -= FillSelections;
+        OnShipSelected -= FillSelectionsAndTryMerge;
+        OnShipDragged -= TryFillSelectionsAndTryMerge;
         LevelProgress.OnProgressFinished -= delegate { StopAllCoroutines(); };
     }
 
@@ -76,7 +80,7 @@ public class MergeField : MonoBehaviour
         shipGrid = generator.GetNewEmptyGrid<Ship>();
     }
 
-    private void FillSelections(Ship selectedShip)
+    private void FillSelectionsAndTryMerge(Ship selectedShip)
     {
         if (ReferenceEquals(firstSelected, null))
         {
@@ -87,6 +91,42 @@ public class MergeField : MonoBehaviour
             secondSelected = selectedShip;
 
             TryMergeShips();
+        }
+    }
+
+    private void TryFillSelectionsAndTryMerge((Ship selected, Vector2 direction) data)
+    {
+        firstSelected = data.selected;
+
+        int rowIndexToMerge = firstSelected.rowIndex + Mathf.Clamp((int)data.direction.y, -1, 1);
+        int colIndexToMerge = firstSelected.colIndex + Mathf.Clamp((int)data.direction.x, -1, 1);
+
+        TryGetSecondSelected(rowIndexToMerge, colIndexToMerge);
+
+        if(secondSelected)
+        {
+            TryMergeShips();
+            Debug.Log($"Seleted = ({firstSelected.rowIndex},{firstSelected.colIndex}). ToMerge = ({rowIndexToMerge},{colIndexToMerge}). Direction == ({data.direction.x},{data.direction.y})");
+        }
+    }
+
+    private void TryGetSecondSelected(int rowIndexToMerge, int colIndexToMerge)
+    {
+        int rows = shipGrid.Length;
+        rowIndexToMerge = Mathf.Clamp(rowIndexToMerge, 0, rows);
+
+        if (rowIndexToMerge >= 0 && rowIndexToMerge < rows)
+        {
+            for (int rowIndex = 0; rowIndex < rows; rowIndex++)
+            {
+                int columns = shipGrid[rowIndex].Length;
+                colIndexToMerge = Mathf.Clamp(colIndexToMerge, 0, columns);
+
+                if (colIndexToMerge >= 0 && colIndexToMerge < columns)
+                {
+                    secondSelected = shipGrid[rowIndexToMerge][colIndexToMerge];
+                }
+            }
         }
     }
 
@@ -104,7 +144,7 @@ public class MergeField : MonoBehaviour
 
     private bool SelectedAreNeighbors()
     {
-        return !(Mathf.Abs(firstSelected.rowIndex - secondSelected.rowIndex) > 1 || Mathf.Abs(firstSelected.columnIndex - secondSelected.columnIndex) > 1);
+        return !(Mathf.Abs(firstSelected.rowIndex - secondSelected.rowIndex) > 1 || Mathf.Abs(firstSelected.colIndex - secondSelected.colIndex) > 1);
     }
 
     private bool SelectedAreIdentical()
@@ -138,17 +178,17 @@ public class MergeField : MonoBehaviour
 
         CleanSelections();
 
-        OnShipsMerged();
+        OnShipsMerged?.Invoke();
     }
 
     private void AffectMergeResult(Ship mergedShip)
     {
-        mergedShip.transform.position = positionsGrid[secondSelected.rowIndex][secondSelected.columnIndex];
+        mergedShip.transform.position = positionsGrid[secondSelected.rowIndex][secondSelected.colIndex];
 
-        shipGrid[firstSelected.rowIndex][firstSelected.columnIndex] = null;
-        shipGrid[secondSelected.rowIndex][secondSelected.columnIndex] = mergedShip;
-        shipGrid[secondSelected.rowIndex][secondSelected.columnIndex].rowIndex = secondSelected.rowIndex;
-        shipGrid[secondSelected.rowIndex][secondSelected.columnIndex].columnIndex = secondSelected.columnIndex;
+        shipGrid[firstSelected.rowIndex][firstSelected.colIndex] = null;
+        shipGrid[secondSelected.rowIndex][secondSelected.colIndex] = mergedShip;
+        shipGrid[secondSelected.rowIndex][secondSelected.colIndex].rowIndex = secondSelected.rowIndex;
+        shipGrid[secondSelected.rowIndex][secondSelected.colIndex].colIndex = secondSelected.colIndex;
 
         mergedShip.Initialize();
         mergedShip.SetDebugText();
@@ -187,7 +227,7 @@ public class MergeField : MonoBehaviour
         shipGrid[rndRowIndex][rndColIndex] = newShip;
         shipGrid[rndRowIndex][rndColIndex].transform.position = positionsGrid[rndRowIndex][rndColIndex];
         shipGrid[rndRowIndex][rndColIndex].rowIndex = rndRowIndex;
-        shipGrid[rndRowIndex][rndColIndex].columnIndex = rndColIndex;
+        shipGrid[rndRowIndex][rndColIndex].colIndex = rndColIndex;
 
         shipGrid[rndRowIndex][rndColIndex].Initialize();
         shipGrid[rndRowIndex][rndColIndex].SetDebugText();

@@ -446,6 +446,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generator: {fileID: 1305157530}
+  newShipSpawnPeriod: {x: 1, y: 2}
+  shipsParent: {fileID: 0}
   shipPrefabs:
   - {fileID: 7553847954584904510, guid: 99450099bc551b640ae12d489574fce4, type: 3}
   - {fileID: 2498435972310015972, guid: cdc7031f1e7486447b17af08996b9a3a, type: 3}
@@ -453,7 +455,6 @@ MonoBehaviour:
   - {fileID: 8342529194481260270, guid: 57fbc91f2a12b6b409a3dad6848418cd, type: 3}
   - {fileID: 4014392429704885561, guid: 9d97c91386943554eaef535752fc7413, type: 3}
   - {fileID: 3415526505129625055, guid: 24ad4a87f6cbe3b4685a4ff22b689143, type: 3}
-  newShipSpawnPeriod: {x: 1, y: 2}
 --- !u!114 &1305157532
 MonoBehaviour:
   m_ObjectHideFlags: 0

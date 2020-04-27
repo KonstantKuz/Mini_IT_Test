@@ -35,7 +35,7 @@ public class Crystal : MonoBehaviour, IGridPoint
     public CrystalData data = null;
 
     public int rowIndex { get; set; }
-    public int columnIndex { get; set; }
+    public int colIndex { get; set; }
     
     public float MoveTime { get { return data.MoveTime; } }
 
@@ -61,7 +61,7 @@ public class Crystal : MonoBehaviour, IGridPoint
     {
         if(indexesDebugText)
         {
-            indexesDebugText.text = $"({rowIndex},{columnIndex})";
+            indexesDebugText.text = $"({rowIndex},{colIndex})";
         }
     }
 }

@@ -134,7 +134,7 @@ public class SimpleGridGenerator : MonoBehaviour
             for (int j = 0; j < columns; j++)
             {
                 generatedGrid[i][j].rowIndex = i;
-                generatedGrid[i][j].columnIndex = j;
+                generatedGrid[i][j].colIndex = j;
                 generatedGrid[i][j].SetDebugText();
             }
         }

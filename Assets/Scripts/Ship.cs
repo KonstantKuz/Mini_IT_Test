@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using UnityEngine.EventSystems;
 
 public enum ShipType
 {
@@ -27,7 +28,7 @@ public class ShipData
 }
 
 
-public class Ship : MonoBehaviour, IGridPoint
+public class Ship : MonoBehaviour, IGridPoint, IPointerClickHandler, IDragHandler
 {
     [Header("Components to cache")]
     [SerializeField] private Button thisButton = null;
@@ -36,20 +37,39 @@ public class Ship : MonoBehaviour, IGridPoint
     public ShipData data = null;
 
     public int rowIndex { get; set; }
-    public int columnIndex { get; set; }
+    public int colIndex { get; set; }
 
     public float MoveTime { get { return data.MoveTime; } }
+
+    private bool canDrag = true;
 
     public void Initialize()
     {
         image.color = data.Color;
+    }
 
-        thisButton.onClick.AddListener(() => InvokeSelection());
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        InvokeSelection();
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        InvokeDragging(eventData.delta);
     }
 
     private void InvokeSelection()
     {
-        MergeField.OnShipSelected(this);
+        MergeField.OnShipSelected?.Invoke(this);
+    }
+
+    private void InvokeDragging(Vector2 direction)
+    {
+        if(canDrag)
+        {
+            MergeField.OnShipDragged?.Invoke((this, direction));
+            StartCoroutine(FreezeOn(0.5f));
+        }
     }
 
     public void MoveTo(Vector3 position)
@@ -62,7 +82,14 @@ public class Ship : MonoBehaviour, IGridPoint
     {
         if (indexesDebugText)
         {
-            indexesDebugText.text = $"({rowIndex},{columnIndex})";
+            indexesDebugText.text = $"({rowIndex},{colIndex})";
         }
+    }
+
+    private IEnumerator FreezeOn(float delay)
+    {
+        canDrag = false;
+        yield return new WaitForSeconds(delay);
+        canDrag = true;
     }
 }

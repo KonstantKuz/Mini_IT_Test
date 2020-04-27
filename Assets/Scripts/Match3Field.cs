@@ -130,27 +130,27 @@ public class Match3Field : MonoBehaviour
 
     private void SwipeCrystalsPositions()
     {
-        crystalGrid[firstSelected.rowIndex][firstSelected.columnIndex].MoveTo(positionsGrid[secondSelected.rowIndex][secondSelected.columnIndex]);
-        crystalGrid[secondSelected.rowIndex][secondSelected.columnIndex].MoveTo(positionsGrid[firstSelected.rowIndex][firstSelected.columnIndex]);
+        crystalGrid[firstSelected.rowIndex][firstSelected.colIndex].MoveTo(positionsGrid[secondSelected.rowIndex][secondSelected.colIndex]);
+        crystalGrid[secondSelected.rowIndex][secondSelected.colIndex].MoveTo(positionsGrid[firstSelected.rowIndex][firstSelected.colIndex]);
     }
 
     private void SwipeCrystalsInGrid()
     {
-        crystalGrid[firstSelected.rowIndex][firstSelected.columnIndex] = secondSelected;
-        crystalGrid[secondSelected.rowIndex][secondSelected.columnIndex] = firstSelected;
+        crystalGrid[firstSelected.rowIndex][firstSelected.colIndex] = secondSelected;
+        crystalGrid[secondSelected.rowIndex][secondSelected.colIndex] = firstSelected;
     }
 
     private void SwipeCrystalsIndexes()
     {
         int firstRowIndex = firstSelected.rowIndex;
-        int firstColumnIndex = firstSelected.columnIndex;
+        int firstColumnIndex = firstSelected.colIndex;
         int secondRowIndex = secondSelected.rowIndex;
-        int secondColumnIndex = secondSelected.columnIndex;
+        int secondColumnIndex = secondSelected.colIndex;
 
         firstSelected.rowIndex = secondRowIndex;
-        firstSelected.columnIndex = secondColumnIndex;
+        firstSelected.colIndex = secondColumnIndex;
         secondSelected.rowIndex = firstRowIndex;
-        secondSelected.columnIndex = firstColumnIndex;
+        secondSelected.colIndex = firstColumnIndex;
 
         firstSelected.SetDebugText();
         secondSelected.SetDebugText();
@@ -158,7 +158,7 @@ public class Match3Field : MonoBehaviour
 
     private bool SelectedAreNeighbors()
     {
-        return !(Mathf.Abs(firstSelected.rowIndex - secondSelected.rowIndex) > 1 || Mathf.Abs(firstSelected.columnIndex - secondSelected.columnIndex) > 1);
+        return !(Mathf.Abs(firstSelected.rowIndex - secondSelected.rowIndex) > 1 || Mathf.Abs(firstSelected.colIndex - secondSelected.colIndex) > 1);
     }
 
     private void RemoveMatchesAfterDelay(float delay, int onRowIndex, int onColIndex)
@@ -195,7 +195,7 @@ public class Match3Field : MonoBehaviour
             for (int j = 0; j < matchList[i].line.Count; j++)
             {
                 int rowIndexRemoveFrom = matchList[i].line[j].rowIndex;
-                int columnIndexRemoveFrom = matchList[i].line[j].columnIndex;
+                int columnIndexRemoveFrom = matchList[i].line[j].colIndex;
                 RemoveCrystal(crystalGrid[rowIndexRemoveFrom][columnIndexRemoveFrom]);
             }
         }
@@ -217,7 +217,7 @@ public class Match3Field : MonoBehaviour
             for (int j = 0; j < matchList[i].line.Count; j++)
             {
                 int rowIndexRemoveFrom = matchList[i].line[j].rowIndex;
-                int columnIndexRemoveFrom = matchList[i].line[j].columnIndex;
+                int columnIndexRemoveFrom = matchList[i].line[j].colIndex;
                 RemoveCrystal(crystalGrid[rowIndexRemoveFrom][columnIndexRemoveFrom]);
             }
         }
@@ -229,7 +229,7 @@ public class Match3Field : MonoBehaviour
         {
             removedCrystal.gameObject.SetActive(false);
             removed.Add(removedCrystal);
-            crystalGrid[removedCrystal.rowIndex][removedCrystal.columnIndex] = null;
+            crystalGrid[removedCrystal.rowIndex][removedCrystal.colIndex] = null;
             AffectToAllCrystalsOver(removedCrystal);
         }
     }
@@ -240,18 +240,18 @@ public class Match3Field : MonoBehaviour
 
         for (int upperCrystalIndex = removedCrystal.rowIndex + 1; upperCrystalIndex < rows; upperCrystalIndex++)
         {
-            if(!crystalGrid[upperCrystalIndex][removedCrystal.columnIndex])
+            if(!crystalGrid[upperCrystalIndex][removedCrystal.colIndex])
             {
                 continue;
             }
-            if(crystalGrid[upperCrystalIndex][removedCrystal.columnIndex].rowIndex==upperCrystalIndex)
+            if(crystalGrid[upperCrystalIndex][removedCrystal.colIndex].rowIndex==upperCrystalIndex)
             {
-                crystalGrid[upperCrystalIndex][removedCrystal.columnIndex].rowIndex = upperCrystalIndex - 1;
-                crystalGrid[upperCrystalIndex - 1][removedCrystal.columnIndex] = crystalGrid[upperCrystalIndex][removedCrystal.columnIndex];
-                crystalGrid[upperCrystalIndex][removedCrystal.columnIndex].MoveTo(positionsGrid[upperCrystalIndex - 1][removedCrystal.columnIndex]);
+                crystalGrid[upperCrystalIndex][removedCrystal.colIndex].rowIndex = upperCrystalIndex - 1;
+                crystalGrid[upperCrystalIndex - 1][removedCrystal.colIndex] = crystalGrid[upperCrystalIndex][removedCrystal.colIndex];
+                crystalGrid[upperCrystalIndex][removedCrystal.colIndex].MoveTo(positionsGrid[upperCrystalIndex - 1][removedCrystal.colIndex]);
             }
 
-            crystalGrid[upperCrystalIndex][removedCrystal.columnIndex].SetDebugText();
+            crystalGrid[upperCrystalIndex][removedCrystal.colIndex].SetDebugText();
         }
     }
     
