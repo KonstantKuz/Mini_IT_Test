@@ -296,8 +296,8 @@ GameObject:
   - component: {fileID: 1305157529}
   - component: {fileID: 1305157533}
   - component: {fileID: 1305157532}
-  - component: {fileID: 1305157531}
   - component: {fileID: 1305157530}
+  - component: {fileID: 1305157531}
   m_Layer: 5
   m_Name: Field
   m_TagString: Untagged
@@ -336,12 +336,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c9d53845fb32364fbb9179241bc0dd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rows: 8
-  columns: 8
-  distanceBtwnCrystals: 65
+  rows: 3
+  columns: 3
+  distanceBtwnPoints: 90
   gridCenter: {fileID: 1305157529}
-  gridParent: {fileID: 0}
-  gridPointPrefab: []
+  gridParent: {fileID: 1305157529}
+  gridPointPrefabs:
+  - {fileID: 7553847954584904510, guid: 99450099bc551b640ae12d489574fce4, type: 3}
+  - {fileID: 2498435972310015972, guid: cdc7031f1e7486447b17af08996b9a3a, type: 3}
+  - {fileID: 6992590960664460050, guid: 76521da360beebe44aac77291d1179df, type: 3}
+  - {fileID: 8342529194481260270, guid: 57fbc91f2a12b6b409a3dad6848418cd, type: 3}
+  - {fileID: 4014392429704885561, guid: 9d97c91386943554eaef535752fc7413, type: 3}
+  - {fileID: 3415526505129625055, guid: 24ad4a87f6cbe3b4685a4ff22b689143, type: 3}
 --- !u!114 &1305157531
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -351,11 +357,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 1305157528}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1824b6f24cd77c4fbf9d3c674998e08, type: 3}
+  m_Script: {fileID: 11500000, guid: fa803bf1aeb29164baa274d8f44253ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   generator: {fileID: 1305157530}
-  minCrystalsCountInMatch: 2
+  shipPrefabs:
+  - {fileID: 7553847954584904510, guid: 99450099bc551b640ae12d489574fce4, type: 3}
+  - {fileID: 2498435972310015972, guid: cdc7031f1e7486447b17af08996b9a3a, type: 3}
+  - {fileID: 6992590960664460050, guid: 76521da360beebe44aac77291d1179df, type: 3}
+  - {fileID: 8342529194481260270, guid: 57fbc91f2a12b6b409a3dad6848418cd, type: 3}
+  - {fileID: 4014392429704885561, guid: 9d97c91386943554eaef535752fc7413, type: 3}
+  - {fileID: 3415526505129625055, guid: 24ad4a87f6cbe3b4685a4ff22b689143, type: 3}
+  newShipSpawnPeriod: {x: 1, y: 2}
 --- !u!114 &1305157532
 MonoBehaviour:
   m_ObjectHideFlags: 0

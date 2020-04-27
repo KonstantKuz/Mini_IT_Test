@@ -270,9 +270,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c9d53845fb32364fbb9179241bc0dd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rows: 8
-  columns: 8
-  distanceBtwnCrystals: 65
+  rows: 6
+  columns: 6
+  distanceBtwnPoints: 65
   gridCenter: {fileID: 1444823698}
   gridParent: {fileID: 1444823698}
   gridPointPrefabs:

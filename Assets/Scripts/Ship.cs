@@ -1,10 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System;
 using UnityEngine;
-using DG.Tweening;
 using UnityEngine.UI;
-public enum CrystalType
+using DG.Tweening;
+
+public enum ShipType
 {
     White = 0,
     Black = 1,
@@ -15,28 +15,29 @@ public enum CrystalType
 }
 
 [System.Serializable]
-public class CrystalData
+public class ShipData
 {
-    [SerializeField] private CrystalType crystalType = 0;
+    [SerializeField] private ShipType shipType = 0;
     [SerializeField] private float moveTime = 0.75f;
     [SerializeField] private Color color;
 
-    public CrystalType CrystalType { get { return crystalType; } }
+    public ShipType ShipType { get { return shipType; } set { shipType = value; } }
     public float MoveTime { get { return moveTime; } }
     public Color Color { get { return color; } }
 }
 
-public class Crystal : MonoBehaviour, IGridPoint
+
+public class Ship : MonoBehaviour, IGridPoint
 {
     [Header("Components to cache")]
     [SerializeField] private Button thisButton = null;
     [SerializeField] private Image image = null;
     [SerializeField] private Text indexesDebugText = null;
-    public CrystalData data = null;
+    public ShipData data = null;
 
     public int rowIndex { get; set; }
     public int columnIndex { get; set; }
-    
+
     public float MoveTime { get { return data.MoveTime; } }
 
     public void Initialize()
@@ -48,7 +49,7 @@ public class Crystal : MonoBehaviour, IGridPoint
 
     private void InvokeSelection()
     {
-        Match3Field.OnCrystalSelected(this);
+        MergeField.OnShipSelected(this);
     }
 
     public void MoveTo(Vector3 position)
@@ -59,7 +60,7 @@ public class Crystal : MonoBehaviour, IGridPoint
 
     public void SetDebugText()
     {
-        if(indexesDebugText)
+        if (indexesDebugText)
         {
             indexesDebugText.text = $"({rowIndex},{columnIndex})";
         }
