@@ -100,13 +100,13 @@ public class MergeField : MonoBehaviour
 
         int rowIndexToMerge = firstSelected.rowIndex + Mathf.Clamp((int)data.direction.y, -1, 1);
         int colIndexToMerge = firstSelected.colIndex + Mathf.Clamp((int)data.direction.x, -1, 1);
-
+        Debug.Log($"Seleted = ({firstSelected.rowIndex},{firstSelected.colIndex}). ToMerge = ({rowIndexToMerge},{colIndexToMerge})");
         TryGetSecondSelected(rowIndexToMerge, colIndexToMerge);
 
         if(secondSelected)
         {
             TryMergeShips();
-            Debug.Log($"Seleted = ({firstSelected.rowIndex},{firstSelected.colIndex}). ToMerge = ({rowIndexToMerge},{colIndexToMerge}). Direction == ({data.direction.x},{data.direction.y})");
+            //Debug.Log($"Seleted = ({firstSelected.rowIndex},{firstSelected.colIndex}). ToMerge = ({rowIndexToMerge},{colIndexToMerge}). Direction == ({data.direction.x},{data.direction.y})");
         }
     }
 
