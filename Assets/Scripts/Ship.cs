@@ -37,12 +37,12 @@ public class Ship : MonoBehaviour, IGridPoint, IPointerClickHandler, IDragHandle
     [SerializeField] private Text indexesDebugText = null;
     public ShipData data = null;
 
+    public float MoveTime { get { return data.MoveTime; } }
+    private bool freezed = false;
+
+    #region IGridPoint
     public int rowIndex { get; set; }
     public int colIndex { get; set; }
-
-    public float MoveTime { get { return data.MoveTime; } }
-
-    private bool canDrag = true;
 
     public void Initialize()
     {
@@ -53,6 +53,16 @@ public class Ship : MonoBehaviour, IGridPoint, IPointerClickHandler, IDragHandle
         }
     }
 
+    public void SetDebugText()
+    {
+        if (indexesDebugText)
+        {
+            indexesDebugText.text = $"({rowIndex},{colIndex})";
+        }
+    }
+    #endregion
+
+    #region IEventTriggerHadler
     public void OnPointerClick(PointerEventData eventData)
     {
         InvokeSelection();
@@ -62,6 +72,7 @@ public class Ship : MonoBehaviour, IGridPoint, IPointerClickHandler, IDragHandle
     {
         InvokeDragging(eventData.delta);
     }
+    #endregion
 
     private void InvokeSelection()
     {
@@ -70,7 +81,7 @@ public class Ship : MonoBehaviour, IGridPoint, IPointerClickHandler, IDragHandle
 
     private void InvokeDragging(Vector2 dragDirection)
     {
-        if(canDrag)
+        if(!freezed)
         {
             MergeField.OnShipDragged?.Invoke((this, dragDirection));
             StartCoroutine(FreezeOn(0.5f));
@@ -83,18 +94,10 @@ public class Ship : MonoBehaviour, IGridPoint, IPointerClickHandler, IDragHandle
         transform.DOMove(position, data.MoveTime);
     }
 
-    public void SetDebugText()
-    {
-        if (indexesDebugText)
-        {
-            indexesDebugText.text = $"({rowIndex},{colIndex})";
-        }
-    }
-
     private IEnumerator FreezeOn(float delay)
     {
-        canDrag = false;
+        freezed = true;
         yield return new WaitForSeconds(delay);
-        canDrag = true;
+        freezed = false;
     }
 }

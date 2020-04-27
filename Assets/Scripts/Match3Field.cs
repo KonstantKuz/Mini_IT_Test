@@ -61,7 +61,7 @@ public class Match3Field : MonoBehaviour
 
         if(crystalGrid == null)
         {
-            crystalGrid = generator.GetNewRandomGrid<Crystal>();
+            crystalGrid = generator.GetNewRandomizedGrid<Crystal>();
         }
         else
         {
@@ -91,7 +91,7 @@ public class Match3Field : MonoBehaviour
 
     private void SetUpPositionsGrid()
     {
-        positionsGrid = generator.GetPositionsGrid();
+        positionsGrid = generator.GetNewPositionsGrid();
     }
 
     private void FillSelections(Crystal selectedCrystal)

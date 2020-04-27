@@ -7,8 +7,7 @@ public class MergeField : MonoBehaviour
 {
     [SerializeField] private SimpleGridGenerator generator = null;
     [SerializeField] private Vector2 newShipSpawnPeriod;
-    [SerializeField] private Transform shipsParent;
-    [SerializeField] private List<GameObject> shipPrefabs = null;
+    [SerializeField] private Transform shipsParent = null;
 
     private Ship[][] shipGrid = null;
     private Vector3[][] positionsGrid = null;
@@ -18,7 +17,6 @@ public class MergeField : MonoBehaviour
 
     public static Action<Ship> OnShipSelected;
     public static Action<(Ship selected, Vector2 dragDirection)> OnShipDragged;
-
     public static Action OnShipsMerged;
 
     private Dictionary<ShipType, GameObject> shipPrefabsDict = null;
@@ -64,15 +62,15 @@ public class MergeField : MonoBehaviour
     private void SetUpPrefabsDictionary()
     {
         shipPrefabsDict = new Dictionary<ShipType, GameObject>();
-        for (int i = 0; i < shipPrefabs.Count; i++)
+        for (int i = 0; i < generator.GridPointPrefabs().Length; i++)
         {
-            shipPrefabsDict.Add(shipPrefabs[i].GetComponent<Ship>().data.ShipType, shipPrefabs[i]);
+            shipPrefabsDict.Add(generator.GridPointPrefabs()[i].GetComponent<Ship>().data.ShipType, generator.GridPointPrefabs()[i]);
         }
     }
 
     private void GetPositionsGrid()
     {
-        positionsGrid = generator.GetPositionsGrid();
+        positionsGrid = generator.GetNewPositionsGrid();
     }
 
     private void GetEmptyShipGrid()
@@ -150,12 +148,6 @@ public class MergeField : MonoBehaviour
         return firstSelected != secondSelected;
     }
 
-    private void CleanSelections()
-    {
-        firstSelected = null;
-        secondSelected = null;
-    }
-
     private IEnumerator MergeShips()
     {
         firstSelected.MoveTo(secondSelected.transform.position);
@@ -174,6 +166,12 @@ public class MergeField : MonoBehaviour
         OnShipsMerged?.Invoke();
     }
 
+    private void CleanSelections()
+    {
+        firstSelected = null;
+        secondSelected = null;
+    }
+    
     private void AffectMergeResult(Ship mergedShip)
     {
         mergedShip.transform.position = positionsGrid[secondSelected.rowIndex][secondSelected.colIndex];

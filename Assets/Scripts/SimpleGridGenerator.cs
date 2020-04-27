@@ -12,7 +12,12 @@ public class SimpleGridGenerator : MonoBehaviour
 
     [SerializeField] private GameObject[] gridPointPrefabs = null;
 
-    public T[][] GetNewRandomGrid<T>() where T : MonoBehaviour, IGridPoint
+    public GameObject[] GridPointPrefabs()
+    {
+        return gridPointPrefabs;
+    }
+
+    public T[][] GetNewRandomizedGrid<T>() where T : MonoBehaviour, IGridPoint
     {
         T[][] generatedGrid;
 
@@ -54,7 +59,7 @@ public class SimpleGridGenerator : MonoBehaviour
         return generatedGrid as T[][];
     }
 
-    public Vector3[][] GetPositionsGrid()
+    public Vector3[][] GetNewPositionsGrid()
     {
         Vector3[][] positionsGrid;
 
