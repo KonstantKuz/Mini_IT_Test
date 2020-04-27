@@ -6,8 +6,9 @@ using System;
 public class MergeField : MonoBehaviour
 {
     [SerializeField] private SimpleGridGenerator generator = null;
-    [SerializeField] private List<GameObject> shipPrefabs = null;
     [SerializeField] private Vector2 newShipSpawnPeriod;
+    [SerializeField] private Transform shipsParent;
+    [SerializeField] private List<GameObject> shipPrefabs = null;
 
     private Ship[][] shipGrid = null;
     private Vector3[][] positionsGrid = null;
@@ -23,11 +24,13 @@ public class MergeField : MonoBehaviour
     private void OnEnable()
     {
         OnShipSelected += FillSelections;
+        LevelProgress.OnProgressFinished += delegate { StopAllCoroutines(); };
     }
 
     private void OnDisable()
     {
         OnShipSelected -= FillSelections;
+        LevelProgress.OnProgressFinished -= delegate { StopAllCoroutines(); };
     }
 
     private void Start()
@@ -38,9 +41,20 @@ public class MergeField : MonoBehaviour
     
     public void Initialize()
     {
+        CheckShipsParent();
         SetUpPrefabsDictionary();
         GetPositionsGrid();
         GetEmptyShipGrid();
+    }
+
+    private void CheckShipsParent()
+    {
+        if(shipsParent)
+        {
+            return;
+        }
+
+        shipsParent = transform;
     }
 
     private void SetUpPrefabsDictionary()
@@ -84,7 +98,7 @@ public class MergeField : MonoBehaviour
         }
         else
         {
-            ResetSelections();
+            CleanSelections();
         }
     }
 
@@ -103,7 +117,7 @@ public class MergeField : MonoBehaviour
         return firstSelected != secondSelected;
     }
 
-    private void ResetSelections()
+    private void CleanSelections()
     {
         firstSelected = null;
         secondSelected = null;
@@ -115,14 +129,14 @@ public class MergeField : MonoBehaviour
         yield return new WaitForSeconds(firstSelected.MoveTime);
 
         ShipType mergeResult = (ShipType)((int)firstSelected.data.ShipType + 1);
-        Ship mergedShip = Instantiate(shipPrefabsDict[mergeResult], transform).GetComponent<Ship>();
+        Ship resultShip = Instantiate(shipPrefabsDict[mergeResult], shipsParent).GetComponent<Ship>();
 
-        AffectMergeResult(mergedShip);
+        AffectMergeResult(resultShip);
 
         Destroy(firstSelected.gameObject);
         Destroy(secondSelected.gameObject);
 
-        ResetSelections();
+        CleanSelections();
 
         OnShipsMerged();
     }
@@ -144,24 +158,37 @@ public class MergeField : MonoBehaviour
     {
         yield return new WaitForSeconds(UnityEngine.Random.Range(newShipSpawnPeriod.x, newShipSpawnPeriod.y));
 
-        int rndRowIndex = UnityEngine.Random.Range(0, shipGrid.Length);
-        int rndColIndex = UnityEngine.Random.Range(0, shipGrid[0].Length);
-
-        if (shipGrid[rndRowIndex][rndColIndex] == null)
-        {
-            SpawnNewShipAndSetUpOnGrid(rndRowIndex, rndColIndex);
-        }
+        StartCoroutine(ForceRandomSpawn());
 
         yield return StartCoroutine(StartSpawnShips());
     }
 
+    private IEnumerator ForceRandomSpawn()
+    {
+        yield return new WaitForEndOfFrame();
+
+        int rndRowIndex = UnityEngine.Random.Range(0, shipGrid.Length);
+        int rndColIndex = UnityEngine.Random.Range(0, shipGrid[rndRowIndex].Length);
+
+        if (shipGrid[rndRowIndex][rndColIndex] == null)
+        {
+            SpawnNewShipAndSetUpOnGrid(rndRowIndex, rndColIndex);
+            yield return null;
+        }
+        else
+        {
+            StartCoroutine(ForceRandomSpawn());
+        }
+    }
+
     private void SpawnNewShipAndSetUpOnGrid(int rndRowIndex, int rndColIndex)
     {
-        Ship newShip = Instantiate(shipPrefabsDict[ShipType.White], transform).GetComponent<Ship>();
+        Ship newShip = Instantiate(shipPrefabsDict[ShipType.White], shipsParent).GetComponent<Ship>();
         shipGrid[rndRowIndex][rndColIndex] = newShip;
         shipGrid[rndRowIndex][rndColIndex].transform.position = positionsGrid[rndRowIndex][rndColIndex];
         shipGrid[rndRowIndex][rndColIndex].rowIndex = rndRowIndex;
         shipGrid[rndRowIndex][rndColIndex].columnIndex = rndColIndex;
+
         shipGrid[rndRowIndex][rndColIndex].Initialize();
         shipGrid[rndRowIndex][rndColIndex].SetDebugText();
     }
