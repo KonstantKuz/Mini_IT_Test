@@ -16,7 +16,7 @@ public class MergeField : MonoBehaviour
     private Ship secondSelected = null;
 
     public static Action<Ship> OnShipSelected;
-
+    
     private Dictionary<ShipType, GameObject> shipPrefabsDict = null;
 
     private void Start()
@@ -133,27 +133,15 @@ public class MergeField : MonoBehaviour
     {
         yield return new WaitForSeconds(UnityEngine.Random.Range(newShipSpawnPeriod.x, newShipSpawnPeriod.y));
 
-        StartCoroutine(SpawnNewShipForcibly());
-
-        yield return StartCoroutine(StartSpawnShips());
-    }
-
-    private IEnumerator SpawnNewShipForcibly()
-    {
-        yield return new WaitForEndOfFrame();
-
         int rndRowIndex = UnityEngine.Random.Range(0, shipGrid.Length);
         int rndColIndex = UnityEngine.Random.Range(0, shipGrid[0].Length);
 
         if (shipGrid[rndRowIndex][rndColIndex] == null)
         {
             SpawnNewShipAndSetUpOnGrid(rndRowIndex, rndColIndex);
-            yield return null;
         }
-        else
-        {
-            yield return StartCoroutine(SpawnNewShipForcibly());
-        }
+
+        yield return StartCoroutine(StartSpawnShips());
     }
 
     private void SpawnNewShipAndSetUpOnGrid(int rndRowIndex, int rndColIndex)

@@ -276,9 +276,12 @@ MonoBehaviour:
   gridCenter: {fileID: 1444823698}
   gridParent: {fileID: 1444823698}
   gridPointPrefabs:
+  - {fileID: 7553847954584904510, guid: 36d7f07c68805bd4396e3bd46e308ed8, type: 3}
   - {fileID: 2498435972310015972, guid: 42666152729fba74eab5cbbeb960f188, type: 3}
   - {fileID: 6992590960664460050, guid: 7055398f4dfeea04ca029475ebe45a95, type: 3}
   - {fileID: 8342529194481260270, guid: 7cc02ca9b24696d4596fadae20e54b99, type: 3}
+  - {fileID: 4014392429704885561, guid: 295fa03069baf8346905b3e24018f72f, type: 3}
+  - {fileID: 3415526505129625055, guid: 8ccd8884ac65f2441862b46eeeded38c, type: 3}
 --- !u!114 &1444823700
 MonoBehaviour:
   m_ObjectHideFlags: 0
